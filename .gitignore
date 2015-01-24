@@ -1,2 +1,5 @@
 # Ignore Compiled Java Files
 *.class
+.idea/
+*.iml
+out/
