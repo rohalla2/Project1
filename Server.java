@@ -1,66 +1,16 @@
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public final class Server {
 	private final int serverPort;
 	private ServerSocket socket;
+	private Socket mClientSocket;
 	private DataOutputStream toClientStream;
 	private BufferedReader fromClientStream;
+	private HashMap<String,String> mRedirects;
 
-	public Server(int serverPort) {
-		this.serverPort = serverPort;
-	}
-
-	/**
-	 * Creates a socket + binds to the desired server-side port #.
-	 *
-	 * @throws {@link IOException} if the port is already in use.
-	 */
-	public void bind() throws IOException {
-		socket = new ServerSocket(serverPort);
-		System.out.println("Server bound and listening to port " + serverPort);
-	}
-
-	/**
-	 * Waits for a client to connect, and then sets up stream objects for communication
- 	 * in both directions.
-	 *
-	 * @return {@code true} if the connection is successfully established.
-	 * @throws {@link IOException} if the server fails to accept the connection.
-	 */
-	public boolean acceptFromClient() throws IOException {
-		Socket clientSocket;
-		try {
-			clientSocket = socket.accept();
-		} catch (SecurityException e) {
-			System.out.println("The security manager intervened; your config is very wrong. " + e);
-			return false;
-		} catch (IllegalArgumentException e) {
-			System.out.println("Probably an invalid port number. " + e);
-			return false;
-		}
-
-		toClientStream = new DataOutputStream(clientSocket.getOutputStream());
-		fromClientStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		return true;
-	}
-
-	/**
-	 * Loops forever, reading a line from the client, printing it to the screen,
-	 * then echoing it back.
-	 *
-	 * @throws (@link IOException} if a communication error occurs.
-	 */
-	public void echoLoop() throws IOException {
-		while (true) {
-			String blob = fromClientStream.readLine();
-			System.out.println(blob);
-			toClientStream.writeBytes(blob + '\n');
-		}	
-	}	
-				
 	public static void main(String argv[]) {
 		Map<String, String> flags = Utils.parseCmdlineFlags(argv);
 		if (!flags.containsKey("--serverPort")) {
@@ -77,16 +27,171 @@ public final class Server {
 		}
 
 		Server server = new Server(serverPort);
-		try {
-			server.bind();
-			if (server.acceptFromClient()) {
-				server.echoLoop();
-			} else {
-				System.out.println("Error accepting client connection.");
+		server.loadRedirects();
+		server.bind();
+		// loop so server will begin listening again on the port once terminating a connection
+		while(true) {
+			try{
+				if (server.acceptFromClient()) {
+					ArrayList<String> x = server.getRequestHeader();
+					// split the first line of the request
+					String[] requests = x.get(0).split(" ");
+					// process the request
+					server.processRequest(requests[0], requests[1]);
+				} else {
+					System.out.println("Error accepting client connection.");
+				}
+			} catch (IOException e) {
+				System.out.println("Error communicating with client. aborting. Details: " + e);
 			}
-		} catch (IOException e) {
-			System.out.println("Error communicating with client. aborting. Details: " + e);
+			// close sockets and buffered readers
+			server.serverCleanup();
 		}
 	}
+	public Server(int serverPort) {
+		this.serverPort = serverPort;
+	}
+
+	/**
+	 * Creates a socket + binds to the desired server-side port #.
+	 *
+	 * @throws {@link IOException} if the port is already in use.
+	 */
+	public void bind()  {
+		try{
+			socket = new ServerSocket(serverPort);
+			System.out.println("Server bound and listening to port " + serverPort);
+		} catch (IOException e) {
+			System.out.println("Error binding to port " + serverPort);
+		}
+	}
+
+	/**
+	 * Waits for a client to connect, and then sets up stream objects for communication
+	 * in both directions.
+	 *
+	 * @return {@code true} if the connection is successfully established.
+	 * @throws {@link IOException} if the server fails to accept the connection.
+	 */
+	public boolean acceptFromClient() throws IOException {
+		try {
+			mClientSocket = socket.accept();
+		} catch (SecurityException e) {
+			System.out.println("The security manager intervened; your config is very wrong. " + e);
+			return false;
+		} catch (IllegalArgumentException e) {
+			System.out.println("Probably an invalid port number. " + e);
+			return false;
+		}
+
+
+		toClientStream = new DataOutputStream(mClientSocket.getOutputStream());
+		fromClientStream = new BufferedReader(new InputStreamReader(mClientSocket.getInputStream()));
+		return true;
+	}
+
+	public ArrayList<String> getRequestHeader () throws IOException {
+		ArrayList<String> strHeader = new ArrayList<String>();
+		String strLine = null;
+		while (true){
+			strLine = fromClientStream.readLine();
+			if (strLine.isEmpty()){
+				break;
+			} else {
+				strHeader.add(strLine);
+			}
+		}
+		return strHeader;
+	}
+
+	public void processRequest(String httpVerb, String resourcePath){
+		System.out.println("Verb: " + httpVerb + " Resource: " + resourcePath);
+		File resource = new File("www" + resourcePath);
+		// if the requested file exists and is not a directory
+		if (resource.exists() && !resource.isDirectory()) {
+			if (httpVerb.equals("GET")) {
+				this.get(resource);
+			} else if (httpVerb.equals("HEAD")) {
+				this.head(resource);
+			} else {
+				// TODO: return 404 as we do not handle POST
+			}
+		} else if (hasRedirect(resource)) {  //if the file exists in the redirects
+			// TODO: redirect to proper path
+
+		} else {
+			// TODO: 404 error
+		}
+
+	}
+
+	public boolean hasRedirect(File resource){
+		// TODO: Add check to see if resource path exists in mRedirects
+		return false;
+	}
+
+	public void loadRedirects(){
+		// TODO: Add redirects to mRedirects object
+	}
+
+	public String buildHeader(int status, String phrase, String contentType, long length){
+		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
+		strHeader += "Date: " + getServerDate() + "\r\n";
+		strHeader += "Content-Length: " + length + "\r\n";
+		strHeader += "Content-Type: " + contentType + "\r\n\r\n";
+
+		return strHeader;
+	}
+
+	// http://stackoverflow.com/questions/7707555/getting-date-in-http-format-in-java
+	public String getServerDate(){
+		Calendar calendar = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return dateFormat.format(calendar.getTime());
+	}
+
+	public void sendResponse(String header, File file){
+
+		try {
+			toClientStream.writeBytes(header);
+			if (file != null) {
+				byte[] buffer = new byte[1000];
+				FileInputStream in = new FileInputStream(file);
+				while (in.available() > 0) {
+					toClientStream.write(buffer, 0, in.read(buffer));
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void get(File resource){
+		// String contentType = getContentType(resource.getName());
+		String header = buildHeader(200, "OK", "text/html", resource.length());
+		sendResponse(header, resource);
+	}
+
+	public String getContentType(String filePath){
+		// TODO: Figure out what MIME type to return
+		return null;
+	}
+
+	public void head(File resource){
+		// TODO: Handle head request (We know at this point that the resource exists)
+	}
+
+	public void serverCleanup(){
+		try {
+			fromClientStream.close();
+			toClientStream.close();
+			mClientSocket.close();
+		} catch (IOException e){
+			System.out.println(e);
+		}
+	}
+
 }
 
