@@ -192,7 +192,7 @@ public final class Server {
 		if(filePath.contains(".html")){
 			return "text/html";
 		}
-		else if (filePath.contains(".text")){
+		else if (filePath.contains(".txt")){
 			return "text/plain";
 		}
 		else if (filePath.contains(".pdf")){
