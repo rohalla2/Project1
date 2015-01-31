@@ -137,7 +137,20 @@ public final class Server {
 	}
 
 	public void loadRedirects(){
-		// TODO: Add redirects to mRedirects object
+		mRedirects = new HashMap<String, String>();
+
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader("www/redirect.defs"));
+			String line;
+			while((line = reader.readLine()) != null){
+				String[] parts = line.split(" ");
+				mRedirects.put(parts[0], parts[1]);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getRedirect(String resourcePath){
