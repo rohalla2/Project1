@@ -122,9 +122,11 @@ public final class Server {
 			} else {
 				// TODO: return 403 as we do not handle POST/PUT/DELETE
 			}
-		} else if (hasRedirect(resource.getPath())) {  //if the file exists in the redirects
-			// TODO: redirect to proper path (301)
-
+		} else if (hasRedirect(resourcePath)) {  //if the file exists in the redirects
+			HashMap<String,String> headerParams = new HashMap<String, String>();
+			headerParams.put("Location", getRedirect(resourcePath));
+			String header = buildHeader(301,"Moved Permanently", headerParams);
+			sendResponse(header, null);
 		} else { // no file or redirect
 			// TODO: 404 error
 		}
