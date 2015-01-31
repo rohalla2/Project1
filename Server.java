@@ -170,11 +170,13 @@ public final class Server {
 		strHeader += "Date: " + getServerDate() + "\r\n";
 
 		// iterate hashmap
-		Set set = content.entrySet();
-		Iterator i = set.iterator();
-		while(i.hasNext()) {
-			Map.Entry me = (Map.Entry)i.next();
-			strHeader += me.getKey()+": "+me.getValue()+"\r\n";
+		if (content != null) {
+			Set set = content.entrySet();
+			Iterator i = set.iterator();
+			while (i.hasNext()) {
+				Map.Entry me = (Map.Entry) i.next();
+				strHeader += me.getKey() + ": " + me.getValue() + "\r\n";
+			}
 		}
 		strHeader += "\r\n";
 
