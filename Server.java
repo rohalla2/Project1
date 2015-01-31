@@ -161,6 +161,22 @@ public final class Server {
 		return "";
 	}
 
+	public String buildHeader(int status, String phrase, HashMap content){
+		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
+		strHeader += "Date: " + getServerDate() + "\r\n";
+
+		// iterate hashmap
+		Set set = content.entrySet();
+		Iterator i = set.iterator();
+		while(i.hasNext()) {
+			Map.Entry me = (Map.Entry)i.next();
+			strHeader += me.getKey()+": "+me.getValue()+"\r\n";
+		}
+		strHeader += "\r\n";
+
+		return strHeader;
+	}
+
 	public String buildHeader(int status, String phrase, String contentType, long length){
 		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
 		strHeader += "Date: " + getServerDate() + "\r\n";
@@ -198,7 +214,11 @@ public final class Server {
 
 	public void get(File resource){
 		String contentType = getContentType(resource.getName());
-		String header = buildHeader(200, "OK", contentType, resource.length());
+
+		HashMap content = new HashMap();
+		content.put("Content-Type", contentType);
+		content.put("Content-Length", resource.length());
+		String header = buildHeader(200, "OK", content);
 
 		sendResponse(header, resource);
 	}
