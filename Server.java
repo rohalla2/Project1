@@ -122,7 +122,7 @@ public final class Server {
 			} else {
 				// TODO: return 403 as we do not handle POST/PUT/DELETE
 			}
-		} else if (hasRedirect(resource)) {  //if the file exists in the redirects
+		} else if (hasRedirect(resource.getPath())) {  //if the file exists in the redirects
 			// TODO: redirect to proper path (301)
 
 		} else { // no file or redirect
@@ -131,13 +131,29 @@ public final class Server {
 
 	}
 
-	public boolean hasRedirect(File resource){
-		// TODO: Add check to see if resource path exists in mRedirects
-		return false;
+	public boolean hasRedirect(String resourcePath){
+		if(mRedirects.containsKey(resourcePath)){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public void loadRedirects(){
-		// TODO: Add redirects to mRedirects object
+		mRedirects = new HashMap<String, String>();
+
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader("www/redirect.defs"));
+			String line;
+			while((line = reader.readLine()) != null){
+				String[] parts = line.split(" ");
+				mRedirects.put(parts[0], parts[1]);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getRedirect(String resourcePath){
