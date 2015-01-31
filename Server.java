@@ -107,19 +107,25 @@ public final class Server {
 	public void processRequest(String httpVerb, String resourcePath){
 		System.out.println("Verb: " + httpVerb + " Resource: " + resourcePath);
 		File resource = new File("www" + resourcePath);
-		// if the requested file exists and is not a directory
-		if (resource.exists() && !resource.isDirectory()) {
+
+		if (resource.isDirectory()){
+			// TODO: return 404
+			return;
+		}
+
+		// if the requested file exists
+		if (resource.exists()) {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
 				this.head(resource);
 			} else {
-				// TODO: return 404 as we do not handle POST
+				// TODO: return 403 as we do not handle POST/PUT/DELETE
 			}
 		} else if (hasRedirect(resource)) {  //if the file exists in the redirects
-			// TODO: redirect to proper path
+			// TODO: redirect to proper path (301)
 
-		} else {
+		} else { // no file or redirect
 			// TODO: 404 error
 		}
 
@@ -134,11 +140,17 @@ public final class Server {
 		// TODO: Add redirects to mRedirects object
 	}
 
+	public String getRedirect(String resourcePath){
+		// TODO: Add code to read from mRedirects
+		return "";
+	}
+
 	public String buildHeader(int status, String phrase, String contentType, long length){
 		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
 		strHeader += "Date: " + getServerDate() + "\r\n";
 		strHeader += "Content-Length: " + length + "\r\n";
 		strHeader += "Content-Type: " + contentType + "\r\n\r\n";
+		// TODO: set close connection header
 
 		return strHeader;
 	}
@@ -169,6 +181,7 @@ public final class Server {
 	}
 
 	public void get(File resource){
+		// TODO: get proper contenttype (as below)
 		// String contentType = getContentType(resource.getName());
 		String header = buildHeader(200, "OK", "text/html", resource.length());
 		sendResponse(header, resource);
