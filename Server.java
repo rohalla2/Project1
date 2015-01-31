@@ -109,7 +109,8 @@ public final class Server {
 		File resource = new File("www" + resourcePath);
 
 		if (resource.isDirectory()){
-			// TODO: return 404
+			String header = buildHeader(404, "Not Found", null);
+			sendResponse(header, null);
 			return;
 		}
 
@@ -120,13 +121,17 @@ public final class Server {
 			} else if (httpVerb.equals("HEAD")) {
 				this.head(resource);
 			} else {
-				// TODO: return 403 as we do not handle POST/PUT/DELETE
+				String header = buildHeader(403, "Forbidden", null);
+				sendResponse(header, null);
 			}
-		} else if (hasRedirect(resource.getPath())) {  //if the file exists in the redirects
-			// TODO: redirect to proper path (301)
-
+		} else if (hasRedirect(resourcePath)) {  //if the file exists in the redirects
+			HashMap<String,String> headerParams = new HashMap<String, String>();
+			headerParams.put("Location", getRedirect(resourcePath));
+			String header = buildHeader(301,"Moved Permanently", headerParams);
+			sendResponse(header, null);
 		} else { // no file or redirect
-			// TODO: 404 error
+			String header = buildHeader(404, "Not Found", null);
+			sendResponse(header, null);
 		}
 
 	}
@@ -157,8 +162,7 @@ public final class Server {
 	}
 
 	public String getRedirect(String resourcePath){
-		// TODO: Add code to read from mRedirects
-		return "";
+		return mRedirects.get(resourcePath);
 	}
 
 	public String buildHeader(int status, String phrase, HashMap content){
@@ -166,11 +170,13 @@ public final class Server {
 		strHeader += "Date: " + getServerDate() + "\r\n";
 
 		// iterate hashmap
-		Set set = content.entrySet();
-		Iterator i = set.iterator();
-		while(i.hasNext()) {
-			Map.Entry me = (Map.Entry)i.next();
-			strHeader += me.getKey()+": "+me.getValue()+"\r\n";
+		if (content != null) {
+			Set set = content.entrySet();
+			Iterator i = set.iterator();
+			while (i.hasNext()) {
+				Map.Entry me = (Map.Entry) i.next();
+				strHeader += me.getKey() + ": " + me.getValue() + "\r\n";
+			}
 		}
 		strHeader += "\r\n";
 
