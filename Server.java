@@ -35,9 +35,15 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					String[] requests = x.get(0).split(" ");
-					// process the request
-					server.processRequest(requests[0], requests[1]);
+					if(x.isEmpty()){
+						System.out.println("Get request header is empty.");
+					}
+					else {
+						String[] requests = x.get(0).split(" ");
+						// process the request
+						server.processRequest(requests[0], requests[1]);
+					}
+
 				} else {
 					System.out.println("Error accepting client connection.");
 				}
@@ -95,12 +101,19 @@ public final class Server {
 		String strLine = null;
 		while (true){
 			strLine = fromClientStream.readLine();
-			if (strLine.isEmpty()){
+
+			System.out.println("get  ---   "+strLine);
+
+			if(strLine == null){
+				break;
+			}
+			else if (strLine.isEmpty()){
 				break;
 			} else {
 				strHeader.add(strLine);
 			}
 		}
+
 		return strHeader;
 	}
 
