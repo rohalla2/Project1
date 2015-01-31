@@ -181,12 +181,8 @@ public final class Server {
 	}
 
 	public void get(File resource){
-		// TODO: get proper contenttype (as below)
 		String contentType = getContentType(resource.getName());
-		System.out.println("contentType ---- " + contentType);
-		System.out.println();
-
-		String header = buildHeader(200, "OK", "text/html", resource.length());
+		String header = buildHeader(200, "OK", contentType, resource.length());
 
 		sendResponse(header, resource);
 	}
