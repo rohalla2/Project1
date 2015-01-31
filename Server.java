@@ -182,14 +182,35 @@ public final class Server {
 
 	public void get(File resource){
 		// TODO: get proper contenttype (as below)
-		// String contentType = getContentType(resource.getName());
+		String contentType = getContentType(resource.getName());
+		System.out.println("contentType ---- " + contentType);
+		System.out.println();
+
 		String header = buildHeader(200, "OK", "text/html", resource.length());
+
 		sendResponse(header, resource);
 	}
 
+	// Figure out what MIME type to return
 	public String getContentType(String filePath){
-		// TODO: Figure out what MIME type to return
-		return null;
+		if(filePath.contains(".html")){
+			return "text/html";
+		}
+		else if (filePath.contains(".plain")){
+			return "text/plain";
+		}
+		else if (filePath.contains(".pdf")){
+			return "application/pdf";
+		}
+		else if (filePath.contains(".png")) {
+			return "image/png";
+		}
+		else if (filePath.contains(".jpeg")){
+			return "image/jpeg";
+		}
+		else {
+			return "invalid content type";
+		}
 	}
 
 	public void head(File resource){
