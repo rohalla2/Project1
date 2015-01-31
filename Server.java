@@ -264,7 +264,13 @@ public final class Server {
 	}
 
 	public void head(File resource){
-		// TODO: Handle head request (We know at this point that the resource exists)
+		String contentType = getContentType(resource.getName());
+		HashMap content = new HashMap();
+		content.put("Content-Type", contentType);
+		content.put("Content-Length", resource.length());
+		String header = buildHeader(200, "OK", content);
+
+		sendResponse(header, null);
 	}
 
 	public void serverCleanup(){
