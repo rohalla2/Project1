@@ -35,9 +35,19 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					String[] requests = x.get(0).split(" ");
-					// process the request
-					server.processRequest(requests[0], requests[1]);
+					if(x.isEmpty()){
+						System.out.println("Get request header is empty.");
+
+						// TODO: Handle this 501 - Not Implemented
+						String header = server.buildHeader(501, "Not Implemented", null);
+						// server.sendResponse(header, null);
+					}
+					else {
+						String[] requests = x.get(0).split(" ");
+						// process the request
+						server.processRequest(requests[0], requests[1]);
+					}
+
 				} else {
 					System.out.println("Error accepting client connection.");
 				}
@@ -84,7 +94,6 @@ public final class Server {
 			return false;
 		}
 
-
 		toClientStream = new DataOutputStream(mClientSocket.getOutputStream());
 		fromClientStream = new BufferedReader(new InputStreamReader(mClientSocket.getInputStream()));
 		return true;
@@ -93,14 +102,17 @@ public final class Server {
 	public ArrayList<String> getRequestHeader () throws IOException {
 		ArrayList<String> strHeader = new ArrayList<String>();
 		String strLine = null;
-		while (true){
+		while (true) {
 			strLine = fromClientStream.readLine();
-			if (strLine.isEmpty()){
+			if (strLine == null) {
+				break;
+			} else if (strLine.isEmpty()) {
 				break;
 			} else {
 				strHeader.add(strLine);
 			}
 		}
+
 		return strHeader;
 	}
 
