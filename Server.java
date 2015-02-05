@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public final class Server {
+	private static final String[] URLS_404 = {"/redirect.defs"};
 	private final int serverPort;
 	private ServerSocket socket;
 	private Socket mClientSocket;
@@ -127,7 +128,7 @@ public final class Server {
 		}
 
 		// if the requested file exists
-		if (resource.exists()) {
+		if (resource.exists() && !isForbidden(resourcePath)) {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
@@ -239,6 +240,16 @@ public final class Server {
 		String header = buildHeader(200, "OK", content);
 
 		sendResponse(header, resource);
+	}
+
+	public boolean isForbidden(String resourcePath){
+		for (int i = 0; i < URLS_404.length; i++){
+			if (resourcePath.equals(URLS_404[i])){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	// Figure out what MIME type to return
