@@ -233,9 +233,9 @@ public final class Server {
 	public void get(File resource){
 		String contentType = getContentType(resource.getName());
 
-		HashMap content = new HashMap();
+		HashMap<String, String> content = new HashMap<String,String>();
 		content.put("Content-Type", contentType);
-		content.put("Content-Length", resource.length());
+		content.put("Content-Length", String.valueOf(resource.length()));
 		String header = buildHeader(200, "OK", content);
 
 		sendResponse(header, resource);
