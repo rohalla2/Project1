@@ -128,7 +128,7 @@ public final class Server {
 		}
 
 		// if the requested file exists
-		if (resource.exists() && !isForbidden(resourcePath)) {
+		if (resource.exists() && !is404(resourcePath)) {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
@@ -242,7 +242,7 @@ public final class Server {
 		sendResponse(header, resource);
 	}
 
-	public boolean isForbidden(String resourcePath){
+	public boolean is404(String resourcePath){
 		for (int i = 0; i < URLS_404.length; i++){
 			if (resourcePath.equals(URLS_404[i])){
 				return true;
