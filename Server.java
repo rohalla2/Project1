@@ -1,6 +1,5 @@
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -37,7 +36,14 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					if(x != null && !x.isEmpty()){
+					if(x.isEmpty()){
+						System.out.println("Get request header is empty.");
+
+						// TODO: Handle this 501 - Not Implemented
+						String header = server.buildHeader(501, "Not Implemented", null);
+						// server.sendResponse(header, null);
+					}
+					else {
 						String[] requests = x.get(0).split(" ");
 						// process the request
 						server.processRequest(requests[0], requests[1]);
@@ -126,7 +132,7 @@ public final class Server {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
-				this.head();
+				this.head(resource);
 			} else {
 				String header = buildHeader(403, "Forbidden", null);
 				sendResponse(header, null);
@@ -187,6 +193,8 @@ public final class Server {
 		}
 		strHeader += "\r\n";
 
+		// TODO: set close connection header
+
 		return strHeader;
 	}
 
@@ -236,6 +244,9 @@ public final class Server {
 		return false;
 	}
 
+	// TODO: Fix getContentType()
+	// TODO: Add test for content type
+	// TODO: Add test for content type
 	// Figure out what MIME type to return
 	public String getContentType(String filePath){
 		if(filePath.contains(".html")){
@@ -250,15 +261,18 @@ public final class Server {
 		else if (filePath.contains(".png")) {
 			return "image/png";
 		}
-		else if (filePath.contains(".jpeg") || filePath.contains(".jpg")){
+		else if (filePath.contains(".jpeg")){
 			return "image/jpeg";
 		}
+		else if (filePath.contains(".gif")){
+			return "image/gif";
+		}
 		else {
-			return "text/plain";
+			return "invalid content type";
 		}
 	}
 
-	public void head(){
+	public void head(File resource){
 		String header = buildHeader(200, "OK", null);
 		sendResponse(header, null);
 	}
