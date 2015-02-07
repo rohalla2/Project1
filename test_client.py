@@ -7,7 +7,7 @@ import os
 from urllib2 import urlopen,HTTPError
 
 TIMEOUT = 5
-NORMAL_FILES = ['/index.html', '/foo/bar.html', '/test.pdf', '/test.txt', '/test.png', '/test.jpg']
+NORMAL_FILES = ['/index.html', '/foo/bar.html', '/test.pdf', '/test.txt', '/test.png', '/test.jpg', '/tmp.txt']
 REDIRECTS = [['/cats', 'http://en.wikipedia.org/wiki/Cat']]
 NOTFOUNDS = ['/redirect.defs', '/not/a/real/url.html', '/']
 
