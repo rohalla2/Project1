@@ -264,11 +264,14 @@ public final class Server {
 		else if (filePath.contains(".jpeg")){
 			return "image/jpeg";
 		}
+		else if (filePath.contains(".gif")){
+			return "image/gif";
+		}
 		else {
 			return "invalid content type";
 		}
 	}
-	
+
 	public void head(File resource){
 		String header = buildHeader(200, "OK", null);
 		sendResponse(header, null);
