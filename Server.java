@@ -193,14 +193,6 @@ public final class Server {
 		}
 		strHeader += "\r\n";
 
-		return strHeader;
-	}
-
-	public String buildHeader(int status, String phrase, String contentType, long length){
-		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
-		strHeader += "Date: " + getServerDate() + "\r\n";
-		strHeader += "Content-Length: " + length + "\r\n";
-		strHeader += "Content-Type: " + contentType + "\r\n\r\n";
 		// TODO: set close connection header
 
 		return strHeader;
@@ -252,6 +244,9 @@ public final class Server {
 		return false;
 	}
 
+	// TODO: Fix getContentType()
+	// TODO: Add test for content type
+	// TODO: Add test for content type
 	// Figure out what MIME type to return
 	public String getContentType(String filePath){
 		if(filePath.contains(".html")){
@@ -273,7 +268,7 @@ public final class Server {
 			return "invalid content type";
 		}
 	}
-
+	
 	public void head(File resource){
 		String header = buildHeader(200, "OK", null);
 		sendResponse(header, null);
