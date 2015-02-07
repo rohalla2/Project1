@@ -126,7 +126,7 @@ public final class Server {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
-				this.head(resource);
+				this.head();
 			} else {
 				String header = buildHeader(403, "Forbidden", null);
 				sendResponse(header, null);
@@ -258,7 +258,7 @@ public final class Server {
 		}
 	}
 
-	public void head(File resource){
+	public void head(){
 		String header = buildHeader(200, "OK", null);
 		sendResponse(header, null);
 	}
