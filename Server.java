@@ -1,5 +1,6 @@
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,14 +37,7 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					if(x.isEmpty()){
-						System.out.println("Get request header is empty.");
-
-						// TODO: Handle this 501 - Not Implemented
-						String header = server.buildHeader(501, "Not Implemented", null);
-						// server.sendResponse(header, null);
-					}
-					else {
+					if(x != null && !x.isEmpty()){
 						String[] requests = x.get(0).split(" ");
 						// process the request
 						server.processRequest(requests[0], requests[1]);
@@ -196,16 +190,6 @@ public final class Server {
 		return strHeader;
 	}
 
-	public String buildHeader(int status, String phrase, String contentType, long length){
-		String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
-		strHeader += "Date: " + getServerDate() + "\r\n";
-		strHeader += "Content-Length: " + length + "\r\n";
-		strHeader += "Content-Type: " + contentType + "\r\n\r\n";
-		// TODO: set close connection header
-
-		return strHeader;
-	}
-
 	// http://stackoverflow.com/questions/7707555/getting-date-in-http-format-in-java
 	public String getServerDate(){
 		Calendar calendar = Calendar.getInstance();
@@ -266,11 +250,11 @@ public final class Server {
 		else if (filePath.contains(".png")) {
 			return "image/png";
 		}
-		else if (filePath.contains(".jpeg")){
+		else if (filePath.contains(".jpeg") || filePath.contains(".jpg")){
 			return "image/jpeg";
 		}
 		else {
-			return "invalid content type";
+			return "text/plain";
 		}
 	}
 
