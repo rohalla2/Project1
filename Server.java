@@ -35,10 +35,12 @@ public final class Server {
 		while(true) {
 			try{
 				if (server.acceptFromClient()) {
-					ArrayList<String> x = server.getRequestHeader();
+					ArrayList<String> requestHeader = server.getRequestHeader();
 					// split the first line of the request
-					if(x != null && !x.isEmpty()){
-						String[] requests = x.get(0).split(" ");
+					if(requestHeader == null || requestHeader.isEmpty()){
+						System.out.println("Ignoring empty request...");
+					} else {
+						String[] requests = requestHeader.get(0).split(" ");
 						// process the request
 						server.processRequest(requests[0], requests[1]);
 					}
