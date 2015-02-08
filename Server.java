@@ -37,14 +37,7 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					if(x != null && x.isEmpty()){
-						System.out.println("Get request header is empty.");
-
-						// TODO: Ignore empty requests
-						// String header = server.buildHeader(501, "Not Implemented", null);
-						// server.sendResponse(header, null);
-					}
-					else {
+					if(x != null && !x.isEmpty()){
 						String[] requests = x.get(0).split(" ");
 						// process the request
 						server.processRequest(requests[0], requests[1]);
@@ -133,7 +126,7 @@ public final class Server {
 			if (httpVerb.equals("GET")) {
 				this.get(resource);
 			} else if (httpVerb.equals("HEAD")) {
-				this.head(resource);
+				this.head();
 			} else {
 				String header = buildHeader(403, "Forbidden", null);
 				sendResponse(header, null);
@@ -194,8 +187,6 @@ public final class Server {
 		}
 		strHeader += "\r\n";
 
-		// TODO: set close connection header
-
 		return strHeader;
 	}
 
@@ -245,9 +236,6 @@ public final class Server {
 		return false;
 	}
 
-	// TODO: Fix getContentType()
-	// TODO: Add test for content type
-	// TODO: Add test for content type
 	// Figure out what MIME type to return
 	public String getContentType(String filePath){
 		if(filePath.contains(".html")){
@@ -273,7 +261,7 @@ public final class Server {
 		}
 	}
 
-	public void head(File resource){
+	public void head(){
 		String header = buildHeader(200, "OK", null);
 		sendResponse(header, null);
 	}
@@ -289,4 +277,3 @@ public final class Server {
 	}
 
 }
-
