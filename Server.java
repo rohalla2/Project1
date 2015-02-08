@@ -1,5 +1,6 @@
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,11 +37,11 @@ public final class Server {
 				if (server.acceptFromClient()) {
 					ArrayList<String> x = server.getRequestHeader();
 					// split the first line of the request
-					if(x.isEmpty()){
+					if(x != null && x.isEmpty()){
 						System.out.println("Get request header is empty.");
 
-						// TODO: Handle this 501 - Not Implemented
-						String header = server.buildHeader(501, "Not Implemented", null);
+						// TODO: Ignore empty requests
+						// String header = server.buildHeader(501, "Not Implemented", null);
 						// server.sendResponse(header, null);
 					}
 					else {
@@ -261,14 +262,14 @@ public final class Server {
 		else if (filePath.contains(".png")) {
 			return "image/png";
 		}
-		else if (filePath.contains(".jpeg")){
+		else if (filePath.contains(".jpeg") || filePath.contains(".jpg")){
 			return "image/jpeg";
 		}
 		else if (filePath.contains(".gif")){
 			return "image/gif";
 		}
 		else {
-			return "invalid content type";
+			return "text/plain";
 		}
 	}
 
